@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 
 from sqlalchemy import (
@@ -16,19 +17,43 @@ from sqlalchemy.orm import declarative_base, relationship, sessionmaker
 # DATABASE CONFIGURATION
 # ============================================================
 
-DATABASE_URL = "sqlite:///./data/ai_data_analyst.db"
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "sqlite:///./data/ai_data_analyst.db",
+)
 
 
 # ============================================================
 # DATABASE ENGINE
 # ============================================================
 
-engine = create_engine(
-    DATABASE_URL,
-    connect_args={
-        "check_same_thread": False
-    },
-)
+if DATABASE_URL.startswith("postgresql://"):
+    DATABASE_URL = DATABASE_URL.replace(
+        "postgresql://",
+        "postgresql+psycopg2://",
+        1,
+    )
+
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace(
+        "postgres://",
+        "postgresql+psycopg2://",
+        1,
+    )
+
+
+if DATABASE_URL.startswith("sqlite"):
+    engine = create_engine(
+        DATABASE_URL,
+        connect_args={
+            "check_same_thread": False
+        },
+    )
+else:
+    engine = create_engine(
+        DATABASE_URL,
+        pool_pre_ping=True,
+    )
 
 
 # ============================================================
@@ -182,6 +207,7 @@ class Dataset(Base):
         "User",
         back_populates="datasets",
     )
+
 
 # ============================================================
 # ANALYSIS HISTORY MODEL

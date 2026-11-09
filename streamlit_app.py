@@ -1913,23 +1913,11 @@ button {
 }
 
 
-/* Hide Streamlit's original icon */
-
-section[data-testid="stSidebar"]
-[data-testid="stSidebarHeader"]
-[data-testid="stSidebarCollapseButton"]
-button svg {
-    display: none !important;
-}
-
-
-/* Our < icon */
 
 section[data-testid="stSidebar"]
 [data-testid="stSidebarHeader"]
 [data-testid="stSidebarCollapseButton"]
 button::before {
-    content: "<" !important;
 
     display: block !important;
 
@@ -1957,8 +1945,8 @@ button::before {
 
     position: fixed !important;
 
-    top: 14px !important;
-    left: 14px !important;
+    top: 42px !important;
+    left: 42px !important;
 
     z-index: 999999 !important;
 }
@@ -2053,6 +2041,7 @@ button:hover {
    Keep only our custom toggle visible
    ======================================================== */
 
+/*
 section[data-testid="stSidebar"]
 [data-testid="stSidebarCollapseButton"]
 button,
@@ -2063,6 +2052,7 @@ button {
     opacity: 0 !important;
     pointer-events: none !important;
 }
+*/
 
 .sidebar-compact-description {
     margin-top: -0.15rem !important;
@@ -2386,6 +2376,67 @@ div[data-testid="stTextArea"] textarea:focus {
     box-shadow:
         0 11px 25px
         rgba(105, 57, 255, 0.32) !important;
+}
+
+/* ========================================================
+   FINAL SIDEBAR TOGGLE FIX
+   ======================================================== */
+
+/* CLOSE BUTTON */
+section[data-testid="stSidebar"]
+[data-testid="stSidebarCollapseButton"] button {
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+}
+
+section[data-testid="stSidebar"]
+[data-testid="stSidebarCollapseButton"] button svg {
+    display: block !important;
+}
+
+/* OPEN SIDEBAR BUTTON */
+
+[data-testid="stSidebarCollapsedControl"] {
+    position: fixed !important;
+    top: 70px !important;
+    left: 20px !important;
+    right: auto !important;
+    bottom: auto !important;
+
+    width: 48px !important;
+    height: 48px !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    z-index: 999999 !important;
+}
+
+[data-testid="stSidebarCollapsedControl"] button {
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px !important;
+    min-height: 48px !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+}
+
+[data-testid="stSidebarCollapsedControl"] button svg {
+    display: block !important;
+    visibility: visible !important;
+    width: 22px !important;
+    height: 22px !important;
 }
     </style>
     """
@@ -3280,342 +3331,6 @@ if not st.session_state.access_token:
     st.stop()
 
 
-# ============================================================
-# SIDEBAR TOGGLE BRIDGE
-# ============================================================
-
-st.html(
-    """
-    <style>
-        #ai-data-analyst-close-toggle,
-        #ai-data-analyst-open-toggle {
-            position: fixed;
-            z-index: 2147483647;
-
-            display: none;
-
-            align-items: center;
-            justify-content: center;
-
-            width: 42px;
-            height: 42px;
-
-            padding: 0;
-
-            border-radius: 10px;
-
-            background:
-                linear-gradient(
-                    135deg,
-                    rgba(55, 52, 125, 0.96),
-                    rgba(82, 55, 145, 0.96)
-                );
-
-            border: 1px solid
-                rgba(139, 124, 255, 0.55);
-
-            color: #ffffff;
-
-            box-shadow:
-                0 8px 22px
-                rgba(0, 0, 0, 0.24);
-
-            cursor: pointer;
-
-            font-size: 27px;
-            font-weight: 600;
-
-            line-height: 1;
-        }
-
-        #ai-data-analyst-close-toggle:hover,
-        #ai-data-analyst-open-toggle:hover {
-            background:
-                linear-gradient(
-                    135deg,
-                    #386fff,
-                    #a936ff
-                );
-
-            border-color:
-                rgba(180, 160, 255, 0.85);
-        }
-
-        #ai-data-analyst-open-toggle {
-            top: 14px;
-            left: 14px;
-        }
-    </style>
-
-    <script>
-    (() => {
-
-        if (window.__aiDataAnalystSidebarToggleInstalled) {
-            return;
-        }
-
-        window.__aiDataAnalystSidebarToggleInstalled = true;
-
-
-        function getSidebar() {
-            return document.querySelector(
-                '[data-testid="stSidebar"]'
-            );
-        }
-
-
-        function getNativeCloseButton() {
-            return document.querySelector(
-                '[data-testid="stSidebarCollapseButton"] button'
-            );
-        }
-
-
-        function getNativeOpenButton() {
-            return document.querySelector(
-                '[data-testid="stSidebarCollapsedControl"] button'
-            );
-        }
-
-
-        function createButtons() {
-
-            let closeButton =
-                document.getElementById(
-                    'ai-data-analyst-close-toggle'
-                );
-
-            let openButton =
-                document.getElementById(
-                    'ai-data-analyst-open-toggle'
-                );
-
-
-            if (!closeButton) {
-
-                closeButton =
-                    document.createElement('button');
-
-                closeButton.id =
-                    'ai-data-analyst-close-toggle';
-
-                closeButton.type =
-                    'button';
-
-                closeButton.textContent = '‹';
-
-                document.body.appendChild(
-                    closeButton
-                );
-
-
-                closeButton.addEventListener(
-                    'click',
-                    () => {
-
-                        const nativeButton =
-                            getNativeCloseButton();
-
-                        if (nativeButton) {
-                            nativeButton.click();
-                        }
-
-                    }
-                );
-            }
-
-
-            if (!openButton) {
-
-                openButton =
-                    document.createElement('button');
-
-                openButton.id =
-                    'ai-data-analyst-open-toggle';
-
-                openButton.type =
-                    'button';
-
-                openButton.textContent = '›';
-
-                document.body.appendChild(
-                    openButton
-                );
-
-
-                openButton.addEventListener(
-                    'click',
-                    () => {
-
-                        const nativeButton =
-                            getNativeOpenButton();
-
-                        if (nativeButton) {
-                            nativeButton.click();
-                        }
-
-                    }
-                );
-            }
-
-
-            return {
-                closeButton,
-                openButton
-            };
-        }
-
-
-        function updateButtons() {
-
-            const sidebar =
-                getSidebar();
-
-            const nativeClose =
-                getNativeCloseButton();
-
-            const nativeOpen =
-                getNativeOpenButton();
-
-
-            if (nativeClose) {
-
-                nativeClose.style.setProperty(
-                    "visibility",
-                    "hidden",
-                    "important"
-                );
-
-                nativeClose.style.setProperty(
-                    "opacity",
-                    "0",
-                    "important"
-                );
-
-                nativeClose.style.setProperty(
-                    "pointer-events",
-                    "none",
-                    "important"
-                );
-            }
-
-
-            if (nativeOpen) {
-
-                nativeOpen.style.setProperty(
-                    "visibility",
-                    "hidden",
-                    "important"
-                );
-
-                nativeOpen.style.setProperty(
-                    "opacity",
-                    "0",
-                    "important"
-                );
-
-                nativeOpen.style.setProperty(
-                    "pointer-events",
-                    "none",
-                    "important"
-                );
-            }
-
-
-            const buttons =
-                createButtons();
-
-            const closeButton =
-                buttons.closeButton;
-
-            const openButton =
-                buttons.openButton;
-
-
-            /*
-             * SIDEBAR OPEN
-             */
-
-            if (
-                sidebar &&
-                nativeClose
-            ) {
-
-                const rect =
-                    sidebar.getBoundingClientRect();
-
-                closeButton.style.left =
-                    Math.max(
-                        8,
-                        rect.right - 50
-                    ) + 'px';
-
-                closeButton.style.top =
-                    '16px';
-
-                closeButton.style.display =
-                    'flex';
-
-                openButton.style.display =
-                    'none';
-
-                return;
-            }
-
-
-            /*
-             * SIDEBAR CLOSED
-             */
-
-            if (nativeOpen) {
-
-                closeButton.style.display =
-                    'none';
-
-                openButton.style.display =
-                    'flex';
-
-                return;
-            }
-
-
-            closeButton.style.display =
-                'none';
-
-            openButton.style.display =
-                'none';
-        }
-
-
-        const observer =
-            new MutationObserver(
-                updateButtons
-            );
-
-
-        observer.observe(
-            document.body,
-            {
-                childList: true,
-                subtree: true,
-                attributes: true
-            }
-        );
-
-
-        updateButtons();
-
-
-        setInterval(
-            updateButtons,
-            500
-        );
-
-    })();
-    </script>
-    """,
-    unsafe_allow_javascript=True,
-)
 
 # ============================================================
 # AUTHENTICATED SIDEBAR
